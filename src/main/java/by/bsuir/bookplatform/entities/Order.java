@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Entity
 @Data
@@ -19,10 +20,6 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
-
     @Column(name = "del_address", nullable = false)
     private String deliveryAddress;
 
@@ -33,5 +30,8 @@ public class Order {
     private LocalDate deliveryDate;
 
     private String comment;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private Set<OrderBook> orderBooks;
 }
 

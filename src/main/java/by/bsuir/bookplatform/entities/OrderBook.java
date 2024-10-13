@@ -3,18 +3,18 @@ package by.bsuir.bookplatform.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
-@Entity
 @Data
-@Table(name = "cart")
-public class Cart {
+@Entity
+@Table(name = "order_books")
+public class OrderBook {
 
     @EmbeddedId
-    private CartId id;
+    private OrderBookId id;
 
     @ManyToOne
-    @MapsId("userId")
-    @JoinColumn(name = "user_id")
-    private User user;
+    @MapsId("orderId")
+    @JoinColumn(name = "order_id")
+    private Order order;
 
     @ManyToOne
     @MapsId("bookId")
@@ -24,4 +24,3 @@ public class Cart {
     @Column(nullable = false)
     private Integer amt;
 }
-

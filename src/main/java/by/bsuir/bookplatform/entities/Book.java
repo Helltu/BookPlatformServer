@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.util.Set;
 
+import jakarta.persistence.*;
+
 @Data
 @Entity
 @Table(name = "book")
@@ -29,6 +31,9 @@ public class Book {
     @Column(nullable = false)
     private Float cost;
 
+    @Column(nullable = false)
+    private Integer amt;
+
     @ManyToMany
     @JoinTable(
             name = "book_genre",
@@ -40,8 +45,9 @@ public class Book {
     private Set<Cart> carts;
 
     @OneToMany(mappedBy = "book")
-    private Set<Order> orders;
+    private Set<OrderBook> orderBooks;
 
     @OneToMany(mappedBy = "book")
     private Set<Review> reviews;
 }
+
