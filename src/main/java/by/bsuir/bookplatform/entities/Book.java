@@ -5,8 +5,6 @@ import lombok.Data;
 
 import java.util.Set;
 
-import jakarta.persistence.*;
-
 @Data
 @Entity
 @Table(name = "book")
@@ -42,7 +40,7 @@ public class Book {
     private Set<Genre> genres;
 
     @OneToMany(mappedBy = "book")
-    private Set<Cart> carts;
+    private Set<CartBook> cartBooks;
 
     @OneToMany(mappedBy = "book")
     private Set<OrderBook> orderBooks;

@@ -30,10 +30,10 @@ public class User {
     private String surname;
 
     @OneToMany(mappedBy = "user")
-    private Set<Cart> carts;
+    private Set<CartBook> cartBooks;
 
     @OneToMany(mappedBy = "user")
-    private Set<Order> orders;
+    private Set<UserOrder> orders;
 
     @OneToMany(mappedBy = "user")
     private Set<Review> reviews;

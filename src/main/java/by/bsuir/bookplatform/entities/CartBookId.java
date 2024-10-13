@@ -9,11 +9,10 @@ import java.io.Serializable;
 
 @Embeddable
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class OrderId implements Serializable {
+@NoArgsConstructor
+public class CartBookId implements Serializable {
 
-    private Long bookId;
     private Long userId;
+    private Long bookId;
 }
-

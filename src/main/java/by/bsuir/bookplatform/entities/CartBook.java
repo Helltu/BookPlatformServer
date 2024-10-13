@@ -5,11 +5,11 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "cart")
-public class Cart {
+@Table(name = "cart_books")
+public class CartBook {
 
     @EmbeddedId
-    private CartId id;
+    private CartBookId id;
 
     @ManyToOne
     @MapsId("userId")
@@ -22,6 +22,6 @@ public class Cart {
     private Book book;
 
     @Column(nullable = false)
-    private Integer amt;
+    private Integer amt; 
 }
 

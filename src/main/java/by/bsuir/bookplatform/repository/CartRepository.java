@@ -1,10 +1,10 @@
 package by.bsuir.bookplatform.repository;
 
-import by.bsuir.bookplatform.entities.Cart;
-import by.bsuir.bookplatform.entities.CartId;
+import by.bsuir.bookplatform.entities.CartBook;
+import by.bsuir.bookplatform.entities.CartBookId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CartRepository extends JpaRepository<Cart, CartId> {
+public interface CartRepository extends JpaRepository<CartBook, CartBookId> {
 }

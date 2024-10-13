@@ -14,7 +14,7 @@ public class OrderBook {
     @ManyToOne
     @MapsId("orderId")
     @JoinColumn(name = "order_id")
-    private Order order;
+    private UserOrder order;
 
     @ManyToOne
     @MapsId("bookId")

@@ -9,8 +9,8 @@ import java.util.Set;
 
 @Entity
 @Data
-@Table(name = "order")
-public class Order {
+@Table(name = "user_order")
+public class UserOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
