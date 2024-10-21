@@ -45,6 +45,13 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private Set<Genre> genres;
 
+    @ManyToMany
+    @JoinTable(
+            name = "book_media",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "media_id"))
+    private Set<Media> media;
+
     @OneToMany(mappedBy = "book")
     private Set<CartBook> cartBooks;
 

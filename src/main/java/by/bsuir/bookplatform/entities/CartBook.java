@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "cart_books")
+@Table(name = "cart_book")
 public class CartBook {
 
     @EmbeddedId

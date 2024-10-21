@@ -1,9 +1,11 @@
 package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.entities.Genre;
+import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.repository.GenreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,16 +31,15 @@ public class GenreService {
                 .findFirst();
 
         if (existingGenre.isPresent()) {
-            throw new IllegalArgumentException("Жанр с таким названием уже существует.");
+            throw new AppException("A genre with this name already exists.", HttpStatus.CONFLICT);
         }
         return genreRepository.save(genre);
     }
 
     public void deleteGenreById(Long id) {
         if (!genreRepository.existsById(id)) {
-            throw new IllegalArgumentException("Жанр не найден.");
+            throw new AppException("Genre not found.", HttpStatus.NOT_FOUND);
         }
         genreRepository.deleteById(id);
     }
 }
-

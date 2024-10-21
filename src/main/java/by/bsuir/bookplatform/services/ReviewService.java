@@ -3,11 +3,13 @@ package by.bsuir.bookplatform.services;
 import by.bsuir.bookplatform.entities.Book;
 import by.bsuir.bookplatform.entities.Review;
 import by.bsuir.bookplatform.entities.ReviewId;
+import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.repository.BookRepository;
 import by.bsuir.bookplatform.repository.ReviewRepository;
 import by.bsuir.bookplatform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,15 +33,15 @@ public class ReviewService {
 
     public Review saveReview(Review review) {
         if (!userRepository.existsById(review.getUser().getId())) {
-            throw new IllegalArgumentException("Пользователь не найден.");
+            throw new AppException("User not found.", HttpStatus.NOT_FOUND);
         }
         if (!bookRepository.existsById(review.getBook().getId())) {
-            throw new IllegalArgumentException("Книга не найдена.");
+            throw new AppException("Book not found.", HttpStatus.NOT_FOUND);
         }
 
         ReviewId reviewId = new ReviewId(review.getBook().getId(), review.getUser().getId());
         if (reviewRepository.existsById(reviewId)) {
-            throw new IllegalArgumentException("Отзыв об этой книге уже был оставлен пользователем.");
+            throw new AppException("A review for this book has already been submitted by the user.", HttpStatus.CONFLICT);
         }
 
         return reviewRepository.save(review);
@@ -48,7 +50,7 @@ public class ReviewService {
     public Review editReview(ReviewId id, Review reviewDetails) {
         Optional<Review> existingReviewOpt = reviewRepository.findById(id);
         if (existingReviewOpt.isEmpty()) {
-            throw new IllegalArgumentException("Отзыв с id " + id + " не найден.");
+            throw new AppException("Review with id " + id + " not found.", HttpStatus.NOT_FOUND);
         }
 
         Review existingReview = existingReviewOpt.get();
@@ -63,4 +65,3 @@ public class ReviewService {
         reviewRepository.deleteById(reviewId);
     }
 }
-

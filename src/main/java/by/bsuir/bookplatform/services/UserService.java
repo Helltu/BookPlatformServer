@@ -1,9 +1,11 @@
 package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.entities.User;
+import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +31,7 @@ public class UserService {
                 .findFirst();
 
         if (existingUser.isPresent()) {
-            throw new IllegalArgumentException("Пользователь с таким Email уже существует.");
+            throw new AppException("A user with this email already exists.", HttpStatus.CONFLICT);
         }
 
         return userRepository.save(user);
@@ -39,4 +41,3 @@ public class UserService {
         userRepository.deleteById(id);
     }
 }
-

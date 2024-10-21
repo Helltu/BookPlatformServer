@@ -1,9 +1,11 @@
 package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.entities.Book;
+import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,13 +27,13 @@ public class BookService {
 
     public Book saveBook(Book book) {
         Optional<Book> existingBook = bookRepository.findAll().stream()
-                .filter(b -> b.getAuthor().equals(book.getAuthor()) &&
-                        b.getPublisher().equals(book.getPublisher()) &&
-                        b.getDescription().equals(book.getDescription()))
+                .filter(b -> b.getAuthor().equalsIgnoreCase(book.getAuthor()) &&
+                        b.getPublisher().equalsIgnoreCase(book.getPublisher()) &&
+                        b.getPublicationYear().equals(book.getPublicationYear()))
                 .findFirst();
 
         if (existingBook.isPresent()) {
-            throw new IllegalArgumentException("Книга уже существует с тем же автором и издателем.");
+            throw new AppException("A book already exists with the same author, publisher and publication year.", HttpStatus.CONFLICT);
         }
         return bookRepository.save(book);
     }
@@ -39,7 +41,7 @@ public class BookService {
     public Book editBook(Long id, Book bookDetails) {
         Optional<Book> existingBookOpt = bookRepository.findById(id);
         if (existingBookOpt.isEmpty()) {
-            throw new IllegalArgumentException("Книга с id " + id + " не найдена.");
+            throw new AppException("Book with id " + id + " not found.", HttpStatus.NOT_FOUND);
         }
 
         Book existingBook = existingBookOpt.get();
@@ -50,15 +52,18 @@ public class BookService {
         existingBook.setDescription(bookDetails.getDescription());
         existingBook.setCost(bookDetails.getCost());
         existingBook.setAmt(bookDetails.getAmt());
+        existingBook.setPages(bookDetails.getPages());
+        existingBook.setHardcover(bookDetails.getHardcover());
+        existingBook.setGenres(bookDetails.getGenres());
+        existingBook.setMedia(bookDetails.getMedia());
 
         return bookRepository.save(existingBook);
     }
 
     public void deleteBookById(Long id) {
         if (!bookRepository.existsById(id)) {
-            throw new IllegalArgumentException("Книга не найдена.");
+            throw new AppException("Book not found.", HttpStatus.NOT_FOUND);
         }
         bookRepository.deleteById(id);
     }
 }
-

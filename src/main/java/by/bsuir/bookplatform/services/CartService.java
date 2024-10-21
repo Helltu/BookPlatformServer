@@ -2,11 +2,13 @@ package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.entities.CartBook;
 import by.bsuir.bookplatform.entities.CartBookId;
+import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.repository.BookRepository;
-import by.bsuir.bookplatform.repository.CartRepository;
+import by.bsuir.bookplatform.repository.CartBookRepository;
 import by.bsuir.bookplatform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,48 +18,47 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CartService {
 
-    private final CartRepository cartRepository;
+    private final CartBookRepository cartBookRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
 
     public List<CartBook> findAllCarts() {
-        return cartRepository.findAll();
+        return cartBookRepository.findAll();
     }
 
     public Optional<CartBook> findCartById(CartBookId cartBookId) {
-        return cartRepository.findById(cartBookId);
+        return cartBookRepository.findById(cartBookId);
     }
 
-    public CartBook saveCart(CartBook cart) {
-        if (!userRepository.existsById(cart.getUser().getId())) {
-            throw new IllegalArgumentException("Пользователь не найден.");
+    public CartBook addBookToCart(CartBook cartBook) {
+        if (!userRepository.existsById(cartBook.getUser().getId())) {
+            throw new AppException("User not found.", HttpStatus.NOT_FOUND);
         }
-        if (!bookRepository.existsById(cart.getBook().getId())) {
-            throw new IllegalArgumentException("Книга не найдена.");
-        }
-
-        CartBookId cartBookId = new CartBookId(cart.getUser().getId(), cart.getBook().getId());
-        if (cartRepository.existsById(cartBookId)) {
-            throw new IllegalArgumentException("Книга уже в корзине.");
+        if (!bookRepository.existsById(cartBook.getBook().getId())) {
+            throw new AppException("Book not found.", HttpStatus.NOT_FOUND);
         }
 
-        return cartRepository.save(cart);
+        CartBookId cartBookId = new CartBookId(cartBook.getUser().getId(), cartBook.getBook().getId());
+        if (cartBookRepository.existsById(cartBookId)) {
+            throw new AppException("Book is already in the cart.", HttpStatus.CONFLICT);
+        }
+
+        return cartBookRepository.save(cartBook);
     }
 
-    public void deleteCartById(CartBookId cartBookId) {
-        cartRepository.deleteById(cartBookId);
+    public void deleteBookFromCart(CartBookId cartBookId) {
+        cartBookRepository.deleteById(cartBookId);
     }
 
     public void clearUserCart(Long userId) {
-        List<CartBook> userCartBooks = cartRepository.findAll().stream()
+        List<CartBook> userCartBooks = cartBookRepository.findAll().stream()
                 .filter(c -> c.getUser().getId().equals(userId))
                 .toList();
 
         if (userCartBooks.isEmpty()) {
-            throw new IllegalArgumentException("Корзина пользователя уже пуста.");
+            throw new AppException("User's cart is already empty.", HttpStatus.CONFLICT);
         }
 
-        cartRepository.deleteAll(userCartBooks);
+        cartBookRepository.deleteAll(userCartBooks);
     }
 }
-

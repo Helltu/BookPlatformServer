@@ -1,11 +1,13 @@
 package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.entities.UserOrder;
+import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.repository.BookRepository;
-import by.bsuir.bookplatform.repository.OrderRepository;
+import by.bsuir.bookplatform.repository.UserOrderRepository;
 import by.bsuir.bookplatform.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,39 +15,39 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class OrderService {
+public class UserOrderService {
 
-    private final OrderRepository orderRepository;
+    private final UserOrderRepository userOrderRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
 
     public List<UserOrder> findAllOrders() {
-        return orderRepository.findAll();
+        return userOrderRepository.findAll();
     }
 
     public Optional<UserOrder> findOrderById(Long id) {
-        return orderRepository.findById(id);
+        return userOrderRepository.findById(id);
     }
 
-    public UserOrder saveOrder(UserOrder order) {
+    public UserOrder placeOrder(UserOrder order) {
         if (!userRepository.existsById(order.getUser().getId())) {
-            throw new IllegalArgumentException("Пользователь не найден.");
+            throw new AppException("User not found.", HttpStatus.NOT_FOUND);
         }
 
         order.getOrderBooks().forEach(orderBook -> {
             if (!bookRepository.existsById(orderBook.getBook().getId())) {
-                throw new IllegalArgumentException("Книга не найдена.");
+                throw new AppException("Book not found.", HttpStatus.NOT_FOUND);
             }
         });
 
         if (order.getDeliveryAddress().isEmpty()) {
-            throw new IllegalArgumentException("Адрес доставки не может быть пустым.");
+            throw new AppException("Delivery address cannot be empty.", HttpStatus.BAD_REQUEST);
         }
 
-        return orderRepository.save(order);
+        return userOrderRepository.save(order);
     }
 
     public void deleteOrderById(Long id) {
-        orderRepository.deleteById(id);
+        userOrderRepository.deleteById(id);
     }
 }
