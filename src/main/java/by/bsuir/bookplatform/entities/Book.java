@@ -32,6 +32,12 @@ public class Book {
     @Column(nullable = false)
     private Integer amt;
 
+    @Column(nullable = false)
+    private Boolean hardcover;
+
+    @Column(nullable = false)
+    private Integer pages;
+
     @ManyToMany
     @JoinTable(
             name = "book_genre",
