@@ -2,12 +2,15 @@ package by.bsuir.bookplatform.entities;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "genre")
 public class Genre {
 
@@ -18,6 +21,6 @@ public class Genre {
     @Column(nullable = false)
     private String name;
 
-    @ManyToMany(mappedBy = "genres")
-    private Set<Book> books;
+    @ManyToMany(mappedBy = "genres", fetch = FetchType.EAGER)
+    private Set<Book> books = new HashSet<Book>();
 }

@@ -1,4 +1,4 @@
-package by.bsuir.bookplatform.repository;
+package by.bsuir.bookplatform.repositories;
 
 import by.bsuir.bookplatform.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;

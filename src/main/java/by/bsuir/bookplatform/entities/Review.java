@@ -2,9 +2,12 @@ package by.bsuir.bookplatform.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "review")
 public class Review {
 
@@ -18,7 +21,7 @@ public class Review {
 
     @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "user__id")
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(nullable = false)

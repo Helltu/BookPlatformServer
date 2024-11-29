@@ -1,4 +1,4 @@
-package by.bsuir.bookplatform.repository;
+package by.bsuir.bookplatform.repositories;
 
 import by.bsuir.bookplatform.entities.OrderBook;
 import by.bsuir.bookplatform.entities.OrderBookId;

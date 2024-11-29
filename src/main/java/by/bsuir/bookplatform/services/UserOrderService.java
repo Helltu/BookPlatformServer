@@ -1,15 +1,20 @@
 package by.bsuir.bookplatform.services;
 
-import by.bsuir.bookplatform.entities.UserOrder;
+import by.bsuir.bookplatform.DTO.OrderBookDTO;
+import by.bsuir.bookplatform.DTO.OrderDetailsDTO;
+import by.bsuir.bookplatform.DTO.UserOrderDTO;
+import by.bsuir.bookplatform.entities.*;
 import by.bsuir.bookplatform.exceptions.AppException;
-import by.bsuir.bookplatform.repository.BookRepository;
-import by.bsuir.bookplatform.repository.UserOrderRepository;
-import by.bsuir.bookplatform.repository.UserRepository;
+import by.bsuir.bookplatform.mapper.DTOMapper;
+import by.bsuir.bookplatform.repositories.UserOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,36 +23,73 @@ import java.util.Optional;
 public class UserOrderService {
 
     private final UserOrderRepository userOrderRepository;
-    private final UserRepository userRepository;
-    private final BookRepository bookRepository;
+    private final OrderBookService orderBookService;
+    private final CartBookService cartBookService;
 
-    public List<UserOrder> findAllOrders() {
-        return userOrderRepository.findAll();
+    public List<UserOrderDTO> getAllUserOrdersDTO() {
+        return userOrderRepository.findAll().stream().map(UserOrderDTO::new).toList();
     }
 
-    public Optional<UserOrder> findOrderById(Long id) {
-        return userOrderRepository.findById(id);
+    public List<UserOrderDTO> getUserOrdersDTO(Long userId) {
+        return getAllUserOrdersDTO().stream().filter(o -> o.getUserId().equals(userId)).toList();
     }
 
-    public UserOrder placeOrder(UserOrder order) {
-        if (!userRepository.existsById(order.getUser().getId())) {
-            throw new AppException("User not found.", HttpStatus.NOT_FOUND);
-        }
+    public UserOrderDTO getUserOrderDTOById(Long id) {
+        Optional<UserOrder> userOrderOpt = userOrderRepository.findById(id);
+        if (!userOrderOpt.isPresent())
+            throw new AppException("User order with id " + id + " not found.", HttpStatus.NOT_FOUND);
 
-        order.getOrderBooks().forEach(orderBook -> {
-            if (!bookRepository.existsById(orderBook.getBook().getId())) {
-                throw new AppException("Book not found.", HttpStatus.NOT_FOUND);
-            }
+        return new UserOrderDTO(userOrderOpt.get());
+    }
+
+    public UserOrder getUserOrderById(Long id) {
+        Optional<UserOrder> userOrderOpt = userOrderRepository.findById(id);
+        if (!userOrderOpt.isPresent())
+            throw new AppException("User order with id " + id + " not found.", HttpStatus.NOT_FOUND);
+
+        return userOrderOpt.get();
+    }
+
+    public UserOrderDTO createUserOrder(UserOrderDTO userOrderDTO) {
+        userOrderDTO.checkValues();
+
+        if(userOrderDTO.getStatus() == null)
+            userOrderDTO.setStatus(OrderStatus.PENDING);
+
+        List<OrderDetailsDTO> orderDetailsDTOs = userOrderDTO.getOrderDetailsDTO();
+        userOrderDTO.setOrderDetailsDTO(new ArrayList<OrderDetailsDTO>());
+
+        UserOrder userOrder = new UserOrder();
+        userOrder = DTOMapper.getInstance().map(userOrderDTO, userOrder.getClass());
+        userOrder.setOrderTime(LocalTime.now());
+        userOrder.setOrderDate(LocalDate.now());
+        userOrder = userOrderRepository.save(userOrder);
+
+        UserOrder finalUserOrder = userOrder;
+        orderDetailsDTOs.forEach(orderDetailsDTO -> {
+            orderBookService.addBookToUserOrder(new OrderBookDTO(finalUserOrder.getId(), orderDetailsDTO.getBookId(), orderDetailsDTO.getAmt()));
         });
 
-        if (order.getDeliveryAddress().isEmpty()) {
-            throw new AppException("Delivery address cannot be empty.", HttpStatus.BAD_REQUEST);
-        }
+        cartBookService.clearUserCartBooks(userOrderDTO.getUserId());
 
-        return userOrderRepository.save(order);
+        return getUserOrderDTOById(userOrder.getId());
     }
 
-    public void deleteOrderById(Long id) {
+    public UserOrderDTO editUserOrderStatus(Long id, UserOrderDTO userOrderDTO) {
+        UserOrder userOrder = getUserOrderById(id);
+
+        if (userOrderDTO.getStatus() == null) {
+            throw new AppException("Order status is required.", HttpStatus.BAD_REQUEST);
+        }
+
+        userOrder.setStatus(userOrderDTO.getStatus());
+        return new UserOrderDTO(userOrderRepository.save(userOrder));
+    }
+
+    public void deleteUserOrderById(Long id) {
+        if (!userOrderRepository.existsById(id)) {
+            throw new AppException("User order with id " + id + " not found.", HttpStatus.NOT_FOUND);
+        }
         userOrderRepository.deleteById(id);
     }
 }

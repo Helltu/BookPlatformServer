@@ -1,12 +1,15 @@
 package by.bsuir.bookplatform.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "user")
 public class User {
 
@@ -17,11 +20,14 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+    @Column(name = "phone_number", nullable = false)
+    private String phoneNumber;
+
     @Column(nullable = false)
     private String password;
 
     @Column(name = "is_admin", nullable = false)
-    private Boolean isAdmin;
+    private Boolean isAdmin = false;
 
     @Column(nullable = false)
     private String name;
@@ -29,12 +35,12 @@ public class User {
     @Column(nullable = false)
     private String surname;
 
-    @OneToMany(mappedBy = "user")
-    private Set<CartBook> cartBooks;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<CartBook> cartBooks = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
-    private Set<UserOrder> orders;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<UserOrder> orders = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
-    private Set<Review> reviews;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<Review> reviews = new HashSet<>();
 }

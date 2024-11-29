@@ -1,11 +1,18 @@
 package by.bsuir.bookplatform.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-@Data
+@Setter
+@Getter
 @Entity
 @Table(name = "book")
 public class Book {
@@ -13,6 +20,9 @@ public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String title;
 
     @Column(nullable = false)
     private String author;
@@ -38,27 +48,23 @@ public class Book {
     @Column(nullable = false)
     private Integer pages;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "book_genre",
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id"))
-    private Set<Genre> genres;
+    private Set<Genre> genres = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "book_media",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "media_id"))
-    private Set<Media> media;
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE)
+    private List<Media> media = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book")
-    private Set<CartBook> cartBooks;
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE)
+    private Set<CartBook> cartBooks = new HashSet<>();
 
-    @OneToMany(mappedBy = "book")
-    private Set<OrderBook> orderBooks;
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE)
+    private Set<OrderBook> orderBooks = new HashSet<>();
 
-    @OneToMany(mappedBy = "book")
-    private Set<Review> reviews;
+    @OneToMany(mappedBy = "book", cascade = CascadeType.REMOVE)
+    private Set<Review> reviews = new HashSet<>();
 }
 

@@ -1,10 +1,11 @@
 package by.bsuir.bookplatform.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "cart_book")
 public class CartBook {
 
