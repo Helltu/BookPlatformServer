@@ -33,7 +33,7 @@ public class Book {
     @Column(name = "publication_year", nullable = false)
     private Integer publicationYear;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Column(nullable = false)
