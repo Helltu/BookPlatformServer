@@ -75,6 +75,21 @@ public class UserOrderService {
         return getUserOrderDTOById(userOrder.getId());
     }
 
+    public UserOrderDTO cancelUserOrder(Long id, Long userId) {
+        UserOrder userOrder = getUserOrderById(id);
+
+        if (!userOrder.getUser().getId().equals(userId)) {
+            throw new AppException("You can only cancel your own orders.", HttpStatus.FORBIDDEN);
+        }
+
+        if (userOrder.getStatus() != OrderStatus.PENDING) {
+            throw new AppException("Only orders with PENDING status can be cancelled.", HttpStatus.BAD_REQUEST);
+        }
+
+        userOrder.setStatus(OrderStatus.CANCELLED);
+        return new UserOrderDTO(userOrderRepository.save(userOrder));
+    }
+
     public UserOrderDTO editUserOrderStatus(Long id, UserOrderDTO userOrderDTO) {
         UserOrder userOrder = getUserOrderById(id);
 

@@ -45,6 +45,16 @@ public class ClientController {
         return userOrderService.createUserOrder(userOrderDTO);
     }
 
+    @PutMapping("/orders/{orderId}/cancel")
+    public UserOrderDTO cancelOrder(@PathVariable Long orderId, @RequestParam Long userId) {
+        return userOrderService.cancelUserOrder(orderId, userId);
+    }
+
+    @GetMapping("{userId}/orders")
+    public List<UserOrderDTO> getUserOrders(@PathVariable Long userId) {
+        return userOrderService.getUserOrdersDTO(userId);
+    }
+
     @PostMapping("/reviews")
     public ReviewDTO writeReview(@RequestBody ReviewDTO reviewDTO) {
         return  reviewService.createReview(reviewDTO);

@@ -30,6 +30,29 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
+    public BookDTO getBookDTOByTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new AppException("Название книги не может быть пустым.", HttpStatus.BAD_REQUEST);
+        }
+
+        List<Book> books = bookRepository.findAll();
+
+        List<Book> filteredBooks = books.stream()
+                .filter(book -> book.getTitle().equalsIgnoreCase(title.trim()))
+                .collect(Collectors.toList());
+
+        if (filteredBooks.isEmpty()) {
+            throw new AppException("Книга с названием \"" + title + "\" не найдена.", HttpStatus.NOT_FOUND);
+        }
+
+        if (filteredBooks.size() > 1) {
+            throw new AppException("Найдено несколько книг с названием \"" + title + "\". Уточните запрос.", HttpStatus.BAD_REQUEST);
+        }
+
+        return new BookDTO(filteredBooks.get(0));
+    }
+
+
     public Set<String> getAllAuthors() {
         Set<String> authors = bookRepository.findAllDistinctAuthors();
         return authors != null ? authors : Collections.emptySet();
