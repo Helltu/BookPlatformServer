@@ -3,6 +3,8 @@ package by.bsuir.bookplatform.services;
 import by.bsuir.bookplatform.DTO.OrderBookDTO;
 import by.bsuir.bookplatform.DTO.OrderDetailsDTO;
 import by.bsuir.bookplatform.DTO.UserOrderDTO;
+import by.bsuir.bookplatform.DTO.stats.MonthlyOrderStatsDTO;
+import by.bsuir.bookplatform.DTO.stats.OrderStatsDTO;
 import by.bsuir.bookplatform.entities.*;
 import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.mapper.DTOMapper;
@@ -15,8 +17,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -106,5 +110,17 @@ public class UserOrderService {
             throw new AppException("User order with id " + id + " not found.", HttpStatus.NOT_FOUND);
         }
         userOrderRepository.deleteById(id);
+    }
+
+    public List<MonthlyOrderStatsDTO> getMonthlyOrderStats() {
+        return userOrderRepository.findAll().stream()
+                .collect(Collectors.groupingBy(
+                        order -> order.getOrderDate().getYear() + "-" + String.format("%02d", order.getOrderDate().getMonthValue()),
+                        Collectors.summingInt(o -> 1)
+                ))
+                .entrySet().stream()
+                .map(e -> new MonthlyOrderStatsDTO(e.getKey(), e.getValue()))
+                .sorted(Comparator.comparing(MonthlyOrderStatsDTO::getMonth))
+                .toList();
     }
 }

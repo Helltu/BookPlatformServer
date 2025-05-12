@@ -1,7 +1,10 @@
 package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.DTO.GenreDTO;
+import by.bsuir.bookplatform.DTO.stats.GenreBookCountDTO;
+import by.bsuir.bookplatform.DTO.stats.GenreRatingDTO;
 import by.bsuir.bookplatform.entities.Genre;
+import by.bsuir.bookplatform.entities.Review;
 import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.mapper.DTOMapper;
 import by.bsuir.bookplatform.repositories.GenreRepository;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -75,5 +79,25 @@ public class GenreService {
             throw new AppException("Жанр с ID " + id + " не найден.", HttpStatus.NOT_FOUND);
         }
         genreRepository.deleteById(id);
+    }
+
+    public List<GenreBookCountDTO> getBooksPerGenre() {
+        return genreRepository.findAll().stream()
+                .map(genre -> new GenreBookCountDTO(genre.getName(), genre.getBooks().size()))
+                .sorted(Comparator.comparing(GenreBookCountDTO::getBookCount).reversed())
+                .toList();
+    }
+
+    public List<GenreRatingDTO> getGenreAverageRatings() {
+        return genreRepository.findAll().stream()
+                .map(genre -> {
+                    List<Review> reviews = genre.getBooks().stream()
+                            .flatMap(book -> book.getReviews().stream())
+                            .toList();
+                    double avg = reviews.isEmpty() ? 0.0 :
+                            reviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+                    return new GenreRatingDTO(genre.getName(), avg);
+                })
+                .toList();
     }
 }

@@ -1,7 +1,12 @@
 package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.DTO.OrderBookDTO;
-import by.bsuir.bookplatform.entities.*;
+import by.bsuir.bookplatform.DTO.stats.AuthorPopularityDTO;
+import by.bsuir.bookplatform.DTO.stats.BookPopularityDTO;
+import by.bsuir.bookplatform.DTO.stats.GenrePopularityDTO;
+import by.bsuir.bookplatform.entities.Book;
+import by.bsuir.bookplatform.entities.OrderBook;
+import by.bsuir.bookplatform.entities.OrderBookId;
 import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.mapper.DTOMapper;
 import by.bsuir.bookplatform.repositories.BookRepository;
@@ -11,8 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -94,5 +99,35 @@ public class OrderBookService {
             throw new AppException("In order " + orderBookId.getOrderId() + " order book " + orderBookId.getBookId() + " not found.", HttpStatus.NOT_FOUND);
 
         orderBookRepository.deleteById(orderBookId);
+    }
+
+    public List<BookPopularityDTO> getBookPopularityStats() {
+        return orderBookRepository.findAll().stream()
+                .collect(Collectors.groupingBy(ob -> ob.getBook().getTitle(),
+                        Collectors.summingInt(OrderBook::getAmt)))
+                .entrySet().stream()
+                .map(entry -> new BookPopularityDTO(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparing(BookPopularityDTO::getOrderCount).reversed())
+                .toList();
+    }
+
+    public List<GenrePopularityDTO> getGenrePopularityStats() {
+        return orderBookRepository.findAll().stream()
+                .filter(ob -> ob.getBook() != null && ob.getBook().getGenres() != null)
+                .flatMap(ob -> ob.getBook().getGenres().stream()
+                        .map(genre -> new AbstractMap.SimpleEntry<>(genre.getName(), ob.getAmt())))
+                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)))
+                .entrySet().stream()
+                .map(e -> new GenrePopularityDTO(e.getKey(), e.getValue()))
+                .toList();
+    }
+
+    public List<AuthorPopularityDTO> getAuthorPopularityStats() {
+        return orderBookRepository.findAll().stream()
+                .filter(ob -> ob.getBook() != null && ob.getBook().getAuthor() != null)
+                .collect(Collectors.groupingBy(ob -> ob.getBook().getAuthor(), Collectors.summingInt(OrderBook::getAmt)))
+                .entrySet().stream()
+                .map(e -> new AuthorPopularityDTO(e.getKey(), e.getValue()))
+                .toList();
     }
 }

@@ -2,6 +2,8 @@ package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.DTO.ReviewDTO;
 import by.bsuir.bookplatform.DTO.UserDTO;
+import by.bsuir.bookplatform.DTO.stats.BookRatingDTO;
+import by.bsuir.bookplatform.DTO.stats.BookReviewCountDTO;
 import by.bsuir.bookplatform.entities.Book;
 import by.bsuir.bookplatform.entities.Review;
 import by.bsuir.bookplatform.entities.ReviewId;
@@ -14,9 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -111,5 +112,28 @@ public class ReviewService {
         Review review = getReviewById(bookId, userId);
 
         reviewRepository.deleteById(review.getId());
+    }
+
+    public List<BookRatingDTO> getBookAverageRatings() {
+        Map<Book, List<Review>> bookToReviews = reviewRepository.findAll().stream()
+                .collect(Collectors.groupingBy(Review::getBook));
+
+        return bookToReviews.entrySet().stream()
+                .map(entry -> {
+                    float avg = (float) entry.getValue().stream()
+                            .mapToInt(Review::getRating).average().orElse(0);
+                    return new BookRatingDTO(entry.getKey().getTitle(), avg);
+                })
+                .sorted(Comparator.comparing(BookRatingDTO::getAverageRating).reversed())
+                .toList();
+    }
+
+    public List<BookReviewCountDTO> getBookReviewCounts() {
+        return reviewRepository.findAll().stream()
+                .collect(Collectors.groupingBy(r -> r.getBook().getTitle(), Collectors.counting()))
+                .entrySet().stream()
+                .map(entry -> new BookReviewCountDTO(entry.getKey(), entry.getValue().intValue()))
+                .sorted(Comparator.comparing(BookReviewCountDTO::getReviewCount).reversed())
+                .toList();
     }
 }

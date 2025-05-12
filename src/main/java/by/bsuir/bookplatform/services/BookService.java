@@ -1,6 +1,8 @@
 package by.bsuir.bookplatform.services;
 
 import by.bsuir.bookplatform.DTO.*;
+import by.bsuir.bookplatform.DTO.stats.AuthorBookCountDTO;
+import by.bsuir.bookplatform.DTO.stats.PublisherBookCountDTO;
 import by.bsuir.bookplatform.entities.*;
 import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.mapper.DTOMapper;
@@ -319,5 +321,21 @@ public class BookService {
         if (bookDTO.getPages() != null && bookDTO.getPages() < 0) {
             throw new AppException("Количество страниц должно быть положительным.", HttpStatus.BAD_REQUEST);
         }
+    }
+
+    public List<PublisherBookCountDTO> getPublisherBookCounts() {
+        return bookRepository.findAll().stream()
+                .collect(Collectors.groupingBy(Book::getPublisher, Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> new PublisherBookCountDTO(e.getKey(), e.getValue().intValue()))
+                .toList();
+    }
+
+    public List<AuthorBookCountDTO> getAuthorBookCounts() {
+        return bookRepository.findAll().stream()
+                .collect(Collectors.groupingBy(Book::getAuthor, Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> new AuthorBookCountDTO(e.getKey(), e.getValue().intValue()))
+                .toList();
     }
 }
