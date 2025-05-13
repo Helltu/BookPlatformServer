@@ -4,10 +4,13 @@ import by.bsuir.bookplatform.DTO.stats.*;
 import by.bsuir.bookplatform.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -22,8 +25,19 @@ public class StatisticsController {
     private final BookService bookService;
 
     @GetMapping("/orders-by-month")
-    public List<MonthlyOrderStatsDTO> getOrdersByMonth() {
-        return userOrderService.getMonthlyOrderStats();
+    public List<MonthlyOrderStatsDTO> getOrdersByMonth(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        return userOrderService.getMonthlyOrderStats(from, to);
+    }
+
+    @GetMapping("/orders-by-status")
+    public List<OrderStatusCountDTO> getOrdersByStatus(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        return userOrderService.getOrderStatusCounts(from, to);
     }
 
     @GetMapping("/books-per-genre")
@@ -42,8 +56,11 @@ public class StatisticsController {
     }
 
     @GetMapping("/book-popularity")
-    public List<BookPopularityDTO> getBookPopularity() {
-        return orderBookService.getBookPopularityStats();
+    public List<BookPopularityDTO> getBookPopularity(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        return orderBookService.getBookPopularityStats(from, to);
     }
 
     @GetMapping("/book-review-counts")
@@ -62,12 +79,18 @@ public class StatisticsController {
     }
 
     @GetMapping("/genre-popularity")
-    public List<GenrePopularityDTO> getGenrePopularity() {
-        return orderBookService.getGenrePopularityStats();
+    public List<GenrePopularityDTO> getGenrePopularity(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        return orderBookService.getGenrePopularityStats(from, to);
     }
 
     @GetMapping("/author-popularity")
-    public List<AuthorPopularityDTO> getAuthorPopularity() {
-        return orderBookService.getAuthorPopularityStats();
+    public List<AuthorPopularityDTO> getAuthorPopularity(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        return orderBookService.getAuthorPopularityStats(from, to);
     }
 }

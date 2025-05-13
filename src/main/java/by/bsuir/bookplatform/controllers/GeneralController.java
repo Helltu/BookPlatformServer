@@ -151,4 +151,9 @@ public class GeneralController {
     public void deleteBookReview(@RequestParam Long bookId, @RequestParam Long userId) {
         reviewService.deleteReviewById(bookId, userId);
     }
+
+    @GetMapping("/books/title/{title}")
+    public Long getBookIdByTitle(@PathVariable String title){
+        return bookService.getBookDTOByTitle(title).getId();
+    }
 }

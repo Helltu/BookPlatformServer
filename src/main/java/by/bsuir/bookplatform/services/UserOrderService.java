@@ -5,6 +5,7 @@ import by.bsuir.bookplatform.DTO.OrderDetailsDTO;
 import by.bsuir.bookplatform.DTO.UserOrderDTO;
 import by.bsuir.bookplatform.DTO.stats.MonthlyOrderStatsDTO;
 import by.bsuir.bookplatform.DTO.stats.OrderStatsDTO;
+import by.bsuir.bookplatform.DTO.stats.OrderStatusCountDTO;
 import by.bsuir.bookplatform.entities.*;
 import by.bsuir.bookplatform.exceptions.AppException;
 import by.bsuir.bookplatform.mapper.DTOMapper;
@@ -112,8 +113,10 @@ public class UserOrderService {
         userOrderRepository.deleteById(id);
     }
 
-    public List<MonthlyOrderStatsDTO> getMonthlyOrderStats() {
+    public List<MonthlyOrderStatsDTO> getMonthlyOrderStats(LocalDate from, LocalDate to) {
         return userOrderRepository.findAll().stream()
+                .filter(order -> (from == null || !order.getOrderDate().isBefore(from)) &&
+                        (to == null || !order.getOrderDate().isAfter(to)))
                 .collect(Collectors.groupingBy(
                         order -> order.getOrderDate().getYear() + "-" + String.format("%02d", order.getOrderDate().getMonthValue()),
                         Collectors.summingInt(o -> 1)
@@ -121,6 +124,19 @@ public class UserOrderService {
                 .entrySet().stream()
                 .map(e -> new MonthlyOrderStatsDTO(e.getKey(), e.getValue()))
                 .sorted(Comparator.comparing(MonthlyOrderStatsDTO::getMonth))
+                .toList();
+    }
+
+    public List<OrderStatusCountDTO> getOrderStatusCounts(LocalDate from, LocalDate to) {
+        return userOrderRepository.findAll().stream()
+                .filter(order -> {
+                    if (from != null && order.getOrderDate().isBefore(from)) return false;
+                    if (to != null && order.getOrderDate().isAfter(to)) return false;
+                    return true;
+                })
+                .collect(Collectors.groupingBy(order -> order.getStatus().name(), Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> new OrderStatusCountDTO(e.getKey(), e.getValue().intValue()))
                 .toList();
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -101,19 +102,23 @@ public class OrderBookService {
         orderBookRepository.deleteById(orderBookId);
     }
 
-    public List<BookPopularityDTO> getBookPopularityStats() {
+    public List<BookPopularityDTO> getBookPopularityStats(LocalDate from, LocalDate to) {
         return orderBookRepository.findAll().stream()
-                .collect(Collectors.groupingBy(ob -> ob.getBook().getTitle(),
-                        Collectors.summingInt(OrderBook::getAmt)))
+                .filter(ob -> ob.getOrder() != null &&
+                        (from == null || !ob.getOrder().getOrderDate().isBefore(from)) &&
+                        (to == null || !ob.getOrder().getOrderDate().isAfter(to)))
+                .collect(Collectors.groupingBy(ob -> ob.getBook().getTitle(), Collectors.summingInt(OrderBook::getAmt)))
                 .entrySet().stream()
                 .map(entry -> new BookPopularityDTO(entry.getKey(), entry.getValue()))
                 .sorted(Comparator.comparing(BookPopularityDTO::getOrderCount).reversed())
                 .toList();
     }
 
-    public List<GenrePopularityDTO> getGenrePopularityStats() {
+    public List<GenrePopularityDTO> getGenrePopularityStats(LocalDate from, LocalDate to) {
         return orderBookRepository.findAll().stream()
-                .filter(ob -> ob.getBook() != null && ob.getBook().getGenres() != null)
+                .filter(ob -> ob.getBook() != null && ob.getBook().getGenres() != null &&
+                        (from == null || !ob.getOrder().getOrderDate().isBefore(from)) &&
+                        (to == null || !ob.getOrder().getOrderDate().isAfter(to)))
                 .flatMap(ob -> ob.getBook().getGenres().stream()
                         .map(genre -> new AbstractMap.SimpleEntry<>(genre.getName(), ob.getAmt())))
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)))
@@ -122,12 +127,15 @@ public class OrderBookService {
                 .toList();
     }
 
-    public List<AuthorPopularityDTO> getAuthorPopularityStats() {
+    public List<AuthorPopularityDTO> getAuthorPopularityStats(LocalDate from, LocalDate to) {
         return orderBookRepository.findAll().stream()
-                .filter(ob -> ob.getBook() != null && ob.getBook().getAuthor() != null)
+                .filter(ob -> ob.getBook() != null && ob.getBook().getAuthor() != null &&
+                        (from == null || !ob.getOrder().getOrderDate().isBefore(from)) &&
+                        (to == null || !ob.getOrder().getOrderDate().isAfter(to)))
                 .collect(Collectors.groupingBy(ob -> ob.getBook().getAuthor(), Collectors.summingInt(OrderBook::getAmt)))
                 .entrySet().stream()
                 .map(e -> new AuthorPopularityDTO(e.getKey(), e.getValue()))
                 .toList();
     }
+
 }
